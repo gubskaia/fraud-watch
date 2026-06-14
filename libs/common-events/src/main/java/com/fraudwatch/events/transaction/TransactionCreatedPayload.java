@@ -14,6 +14,8 @@ public record TransactionCreatedPayload(
     String merchantCategory,
     String direction,
     String status,
-    Instant createdAt
+    Instant createdAt,
+    String deviceId,
+    String ipAddress
 ) {
 }

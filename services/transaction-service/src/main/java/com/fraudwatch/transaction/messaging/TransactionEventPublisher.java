@@ -34,7 +34,9 @@ public class TransactionEventPublisher {
             transaction.getMerchantCategory(),
             transaction.getDirection().name(),
             transaction.getStatus().name(),
-            transaction.getCreatedAt()
+            transaction.getCreatedAt(),
+            transaction.getDeviceId(),
+            transaction.getIpAddress()
         );
 
         EventEnvelope<TransactionCreatedPayload> event = new EventEnvelope<>(
@@ -54,4 +56,3 @@ public class TransactionEventPublisher {
         );
     }
 }
-
