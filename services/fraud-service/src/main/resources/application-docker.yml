@@ -1,0 +1,9 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://postgres-fraud:5432/fraud_db
+  data:
+    redis:
+      host: redis
+  rabbitmq:
+    host: rabbitmq
+

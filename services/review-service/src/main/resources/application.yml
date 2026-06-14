@@ -1,0 +1,26 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: review-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/review_db
+    username: fraudwatch
+    password: fraudwatch
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+  rabbitmq:
+    host: localhost
+    port: 5672
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+

@@ -1,0 +1,43 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      mvc:
+        routes:
+          - id: auth-service
+            uri: http://localhost:8081
+            predicates:
+              - Path=/api/auth/**,/api/users/**
+          - id: transaction-service
+            uri: http://localhost:8082
+            predicates:
+              - Path=/api/accounts/**,/api/transactions/**
+          - id: review-service
+            uri: http://localhost:8084
+            predicates:
+              - Path=/api/reviews/**
+          - id: fraud-service
+            uri: http://localhost:8083
+            predicates:
+              - Path=/api/fraud/**
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+

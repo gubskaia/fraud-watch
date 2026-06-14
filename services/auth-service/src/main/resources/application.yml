@@ -1,0 +1,26 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: auth-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/auth_db
+    username: fraudwatch
+    password: fraudwatch
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+  rabbitmq:
+    host: localhost
+    port: 5672
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+

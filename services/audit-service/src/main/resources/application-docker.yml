@@ -1,0 +1,6 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://postgres-audit:5432/audit_db
+  rabbitmq:
+    host: rabbitmq
+

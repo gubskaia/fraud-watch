@@ -1,0 +1,30 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: fraud-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/fraud_db
+    username: fraudwatch
+    password: fraudwatch
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+  rabbitmq:
+    host: localhost
+    port: 5672
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+

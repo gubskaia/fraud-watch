@@ -1,0 +1,6 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://postgres-review:5432/review_db
+  rabbitmq:
+    host: rabbitmq
+
