@@ -22,6 +22,7 @@ spring:
 auth:
   jwt:
     issuer: fraudwatch-auth-service
+    secret: ZmFrZS1mcmF1ZHdhdGNoLWRldi1zZWNyZXQtZmFrZS1mcmF1ZHdhdGNoLWRldi1zZWNyZXQ=
     access-token-ttl: PT15M
     refresh-token-ttl: P14D
 
