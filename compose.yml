@@ -1,0 +1,269 @@
+services:
+  postgres-auth:
+    image: postgres:16
+    container_name: fraudwatch-postgres-auth
+    environment:
+      POSTGRES_DB: auth_db
+      POSTGRES_USER: fraudwatch
+      POSTGRES_PASSWORD: fraudwatch
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_auth_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fraudwatch -d auth_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  postgres-transaction:
+    image: postgres:16
+    container_name: fraudwatch-postgres-transaction
+    environment:
+      POSTGRES_DB: transaction_db
+      POSTGRES_USER: fraudwatch
+      POSTGRES_PASSWORD: fraudwatch
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_transaction_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fraudwatch -d transaction_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  postgres-fraud:
+    image: postgres:16
+    container_name: fraudwatch-postgres-fraud
+    environment:
+      POSTGRES_DB: fraud_db
+      POSTGRES_USER: fraudwatch
+      POSTGRES_PASSWORD: fraudwatch
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres_fraud_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fraudwatch -d fraud_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  postgres-review:
+    image: postgres:16
+    container_name: fraudwatch-postgres-review
+    environment:
+      POSTGRES_DB: review_db
+      POSTGRES_USER: fraudwatch
+      POSTGRES_PASSWORD: fraudwatch
+    ports:
+      - "5436:5432"
+    volumes:
+      - postgres_review_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fraudwatch -d review_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  postgres-audit:
+    image: postgres:16
+    container_name: fraudwatch-postgres-audit
+    environment:
+      POSTGRES_DB: audit_db
+      POSTGRES_USER: fraudwatch
+      POSTGRES_PASSWORD: fraudwatch
+    ports:
+      - "5437:5432"
+    volumes:
+      - postgres_audit_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fraudwatch -d audit_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  postgres-notification:
+    image: postgres:16
+    container_name: fraudwatch-postgres-notification
+    environment:
+      POSTGRES_DB: notification_db
+      POSTGRES_USER: fraudwatch
+      POSTGRES_PASSWORD: fraudwatch
+    ports:
+      - "5438:5432"
+    volumes:
+      - postgres_notification_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fraudwatch -d notification_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: fraudwatch-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: fraudwatch-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: fraudwatch
+      RABBITMQ_DEFAULT_PASS: fraudwatch
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: -rabbitmq_prometheus return_per_object_metrics true
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+      - "15692:15692"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: services/auth-service/Dockerfile
+    container_name: fraudwatch-auth-service
+    depends_on:
+      postgres-auth:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - "8081:8081"
+
+  transaction-service:
+    build:
+      context: .
+      dockerfile: services/transaction-service/Dockerfile
+    container_name: fraudwatch-transaction-service
+    depends_on:
+      postgres-transaction:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - "8082:8082"
+
+  fraud-service:
+    build:
+      context: .
+      dockerfile: services/fraud-service/Dockerfile
+    container_name: fraudwatch-fraud-service
+    depends_on:
+      postgres-fraud:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8083:8083"
+
+  review-service:
+    build:
+      context: .
+      dockerfile: services/review-service/Dockerfile
+    container_name: fraudwatch-review-service
+    depends_on:
+      postgres-review:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - "8084:8084"
+
+  audit-service:
+    build:
+      context: .
+      dockerfile: services/audit-service/Dockerfile
+    container_name: fraudwatch-audit-service
+    depends_on:
+      postgres-audit:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - "8085:8085"
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: services/notification-service/Dockerfile
+    container_name: fraudwatch-notification-service
+    depends_on:
+      postgres-notification:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - "8086:8086"
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: services/api-gateway/Dockerfile
+    container_name: fraudwatch-api-gateway
+    depends_on:
+      auth-service:
+        condition: service_started
+      transaction-service:
+        condition: service_started
+      fraud-service:
+        condition: service_started
+      review-service:
+        condition: service_started
+    ports:
+      - "8080:8080"
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: fraudwatch-prometheus
+    volumes:
+      - ./infrastructure/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    depends_on:
+      api-gateway:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:9090/-/healthy"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+
+  grafana:
+    image: grafana/grafana:11.1.5
+    container_name: fraudwatch-grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./infrastructure/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./infrastructure/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./infrastructure/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports:
+      - "3000:3000"
+    depends_on:
+      prometheus:
+        condition: service_healthy
+
+volumes:
+  postgres_auth_data:
+  postgres_transaction_data:
+  postgres_fraud_data:
+  postgres_review_data:
+  postgres_audit_data:
+  postgres_notification_data:
+  grafana_data:
