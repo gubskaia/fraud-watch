@@ -41,3 +41,8 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
 
+gateway:
+  security:
+    jwt:
+      issuer: fraudwatch-auth-service
+      secret: ZmFrZS1mcmF1ZHdhdGNoLWRldi1zZWNyZXQtZmFrZS1mcmF1ZHdhdGNoLWRldi1zZWNyZXQ=
