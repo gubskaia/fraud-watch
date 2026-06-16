@@ -8,6 +8,7 @@ import com.fraudwatch.review.domain.ReasonCode;
 import com.fraudwatch.review.domain.ReviewAction;
 import com.fraudwatch.review.domain.ReviewActionType;
 import com.fraudwatch.review.dto.AnalystCommentRequest;
+import com.fraudwatch.review.dto.AssignCaseRequest;
 import com.fraudwatch.review.dto.ReviewCaseResponse;
 import com.fraudwatch.review.dto.ReviewDecisionRequest;
 import com.fraudwatch.review.exception.ReviewBusinessException;
@@ -80,6 +81,21 @@ public class ReviewCaseService {
     @Transactional(readOnly = true)
     public ReviewCaseResponse getCase(Long caseId) {
         return mapCase(getCaseEntity(caseId));
+    }
+
+    @Transactional
+    public ReviewCaseResponse assignCase(Long caseId, AssignCaseRequest request) {
+        FraudCase fraudCase = getOpenCase(caseId);
+        fraudCase.setAssignedTo(request.analyst().trim());
+
+        reviewActionRepository.save(buildAction(
+            fraudCase,
+            ReviewActionType.ASSIGNED,
+            request.analyst(),
+            null,
+            request.details()
+        ));
+        return mapCase(fraudCase);
     }
 
     @Transactional

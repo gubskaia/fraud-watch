@@ -15,6 +15,7 @@ import com.fraudwatch.review.domain.ReasonCode;
 import com.fraudwatch.review.domain.ReviewAction;
 import com.fraudwatch.review.domain.ReviewActionType;
 import com.fraudwatch.review.dto.AnalystCommentRequest;
+import com.fraudwatch.review.dto.AssignCaseRequest;
 import com.fraudwatch.review.dto.ReviewCaseResponse;
 import com.fraudwatch.review.dto.ReviewDecisionRequest;
 import com.fraudwatch.review.mapper.ReviewMapper;
@@ -122,6 +123,34 @@ class ReviewCaseServiceTest {
         assertThat(response.reasonCode()).isEqualTo("LEGIT_ACTIVITY");
 
         verify(reviewDecisionPublisher).publish(fraudCase, "analyst-1");
+    }
+
+    @Test
+    void shouldAssignOpenCaseWithoutPublishingDecision() {
+        FraudCase fraudCase = openCase();
+        when(fraudCaseRepository.findDetailedById(7L)).thenReturn(Optional.of(fraudCase));
+        when(reviewActionRepository.save(any(ReviewAction.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(analystCommentRepository.findAllByFraudCaseOrderByCreatedAtAsc(fraudCase)).thenReturn(List.of());
+        when(reviewActionRepository.findAllByFraudCaseOrderByCreatedAtAsc(fraudCase)).thenAnswer(invocation -> {
+            ReviewAction action = new ReviewAction();
+            action.setActionType(ReviewActionType.ASSIGNED);
+            action.setAnalyst("analyst-queue-1");
+            action.setDetails("Picked from analyst queue");
+            return List.of(action);
+        });
+
+        ReviewCaseResponse response = reviewCaseService.assignCase(
+            7L,
+            new AssignCaseRequest(" analyst-queue-1 ", "Picked from analyst queue")
+        );
+
+        assertThat(fraudCase.getAssignedTo()).isEqualTo("analyst-queue-1");
+        assertThat(response.assignedTo()).isEqualTo("analyst-queue-1");
+        assertThat(response.actions()).hasSize(1);
+        assertThat(response.actions().get(0).actionType()).isEqualTo("ASSIGNED");
+
+        verify(reviewDecisionPublisher, never()).publish(any(), any());
+        verify(reviewActionRepository).save(any(ReviewAction.class));
     }
 
     @Test
