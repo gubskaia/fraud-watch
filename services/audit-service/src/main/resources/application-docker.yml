@@ -3,4 +3,6 @@ spring:
     url: jdbc:postgresql://postgres-audit:5432/audit_db
   rabbitmq:
     host: rabbitmq
-
+    listener:
+      simple:
+        default-requeue-rejected: false
