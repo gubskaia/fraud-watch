@@ -1,6 +1,6 @@
 # FraudWatch
 
-FraudWatch is a Java 21 / Spring Boot microservice platform for real-time banking fraud detection. The system is built as an event-driven monorepo with isolated services, per-service databases, RabbitMQ-based communication, Redis-backed behavioral checks, and an observability stack built around Actuator, Prometheus, and Grafana.
+FraudWatch is a Java 17 / Spring Boot microservice platform for real-time banking fraud detection. The system is built as an event-driven monorepo with isolated services, per-service databases, RabbitMQ-based communication, Redis-backed behavioral checks, and an observability stack built around Actuator, Prometheus, and Grafana.
 
 ## What Is Implemented
 
@@ -80,7 +80,7 @@ More detail is available in [docs/events/event-flow.md](/D:/fraudwatch/docs/even
 
 ### Prerequisites
 
-- Java 21
+- Java 17
 - Docker Desktop with Compose
 - Optional: Maven installed globally, though the repo includes `mvnw`
 
@@ -117,7 +117,7 @@ docker compose down
 
 ## Current Notes
 
-- The repository is configured for Java 21, even if the current local shell may still have Java 18 installed.
+- The repository is configured for Java 17, so the local shell should use JDK 17 or newer.
 - Dockerfiles build each service from the root monorepo using Maven.
 - Prometheus scraping is wired through `/actuator/prometheus`.
 - Grafana provisioning is included; dashboards can be added under `infrastructure/grafana/dashboards`.
@@ -128,4 +128,3 @@ docker compose down
 - Add root-level demo scripts and seed scenarios
 - Add richer Grafana dashboards and runbooks
 - Harden security between services and external clients
-

@@ -3,4 +3,6 @@ spring:
     url: jdbc:postgresql://postgres-review:5432/review_db
   rabbitmq:
     host: rabbitmq
-
+    listener:
+      simple:
+        default-requeue-rejected: false

@@ -1,6 +1,7 @@
 package com.fraudwatch.review.controller;
 
 import com.fraudwatch.review.dto.AnalystCommentRequest;
+import com.fraudwatch.review.dto.AssignCaseRequest;
 import com.fraudwatch.review.dto.ReviewCaseResponse;
 import com.fraudwatch.review.dto.ReviewDecisionRequest;
 import com.fraudwatch.review.service.ReviewCaseService;
@@ -31,6 +32,14 @@ public class ReviewController {
     @GetMapping("/{id}")
     public ReviewCaseResponse getCase(@PathVariable Long id) {
         return reviewCaseService.getCase(id);
+    }
+
+    @PostMapping("/{id}/assign")
+    public ReviewCaseResponse assignCase(
+        @PathVariable Long id,
+        @Valid @RequestBody AssignCaseRequest request
+    ) {
+        return reviewCaseService.assignCase(id, request);
     }
 
     @PostMapping("/{id}/approve")

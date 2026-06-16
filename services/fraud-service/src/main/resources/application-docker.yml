@@ -6,4 +6,6 @@ spring:
       host: redis
   rabbitmq:
     host: rabbitmq
-
+    listener:
+      simple:
+        default-requeue-rejected: false

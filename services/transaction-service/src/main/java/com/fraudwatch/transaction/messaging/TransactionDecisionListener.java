@@ -1,6 +1,5 @@
 package com.fraudwatch.transaction.messaging;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fraudwatch.events.EventEnvelope;
@@ -8,6 +7,7 @@ import com.fraudwatch.events.fraud.FraudDecisionPayload;
 import com.fraudwatch.events.review.ReviewDecisionMadePayload;
 import com.fraudwatch.transaction.config.RabbitConfig;
 import com.fraudwatch.transaction.service.TransactionLifecycleService;
+import java.io.IOException;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
@@ -49,7 +49,7 @@ public class TransactionDecisionListener {
                 }
             );
             transactionLifecycleService.applyReviewDecision(event);
-        } catch (JsonProcessingException exception) {
+        } catch (IOException exception) {
             throw new IllegalArgumentException("Unable to parse review decision event", exception);
         }
     }
@@ -61,9 +61,8 @@ public class TransactionDecisionListener {
                 new TypeReference<>() {
                 }
             );
-        } catch (JsonProcessingException exception) {
+        } catch (IOException exception) {
             throw new IllegalArgumentException("Unable to parse fraud decision event", exception);
         }
     }
 }
-
