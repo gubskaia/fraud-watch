@@ -4,6 +4,7 @@ import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,10 +19,15 @@ public class RabbitConfig {
 
     public static final String FRAUD_EXCHANGE = "fraudwatch.fraud.exchange";
     public static final String REVIEW_EXCHANGE = "fraudwatch.review.exchange";
+    public static final String DEAD_LETTER_EXCHANGE = "fraudwatch.transaction.dlx";
     public static final String FRAUD_APPROVED_QUEUE = "fraudwatch.transaction.fraud-approved";
     public static final String FRAUD_BLOCKED_QUEUE = "fraudwatch.transaction.fraud-blocked";
     public static final String FRAUD_REVIEW_REQUIRED_QUEUE = "fraudwatch.transaction.fraud-review-required";
     public static final String REVIEW_DECISION_QUEUE = "fraudwatch.transaction.review-decision-made";
+    public static final String FRAUD_APPROVED_DLQ = "fraudwatch.transaction.fraud-approved.dlq";
+    public static final String FRAUD_BLOCKED_DLQ = "fraudwatch.transaction.fraud-blocked.dlq";
+    public static final String FRAUD_REVIEW_REQUIRED_DLQ = "fraudwatch.transaction.fraud-review-required.dlq";
+    public static final String REVIEW_DECISION_DLQ = "fraudwatch.transaction.review-decision-made.dlq";
 
     @Bean
     DirectExchange transactionExchange() {
@@ -39,28 +45,53 @@ public class RabbitConfig {
     }
 
     @Bean
+    DirectExchange deadLetterExchange() {
+        return new DirectExchange(DEAD_LETTER_EXCHANGE, true, false);
+    }
+
+    @Bean
     Queue transactionCreatedQueue() {
         return new Queue(TRANSACTION_CREATED_QUEUE, true);
     }
 
     @Bean
     Queue fraudApprovedQueue() {
-        return new Queue(FRAUD_APPROVED_QUEUE, true);
+        return deadLetterEnabledQueue(FRAUD_APPROVED_QUEUE, FRAUD_APPROVED_DLQ);
     }
 
     @Bean
     Queue fraudBlockedQueue() {
-        return new Queue(FRAUD_BLOCKED_QUEUE, true);
+        return deadLetterEnabledQueue(FRAUD_BLOCKED_QUEUE, FRAUD_BLOCKED_DLQ);
     }
 
     @Bean
     Queue fraudReviewRequiredQueue() {
-        return new Queue(FRAUD_REVIEW_REQUIRED_QUEUE, true);
+        return deadLetterEnabledQueue(FRAUD_REVIEW_REQUIRED_QUEUE, FRAUD_REVIEW_REQUIRED_DLQ);
     }
 
     @Bean
     Queue reviewDecisionQueue() {
-        return new Queue(REVIEW_DECISION_QUEUE, true);
+        return deadLetterEnabledQueue(REVIEW_DECISION_QUEUE, REVIEW_DECISION_DLQ);
+    }
+
+    @Bean
+    Queue fraudApprovedDeadLetterQueue() {
+        return new Queue(FRAUD_APPROVED_DLQ, true);
+    }
+
+    @Bean
+    Queue fraudBlockedDeadLetterQueue() {
+        return new Queue(FRAUD_BLOCKED_DLQ, true);
+    }
+
+    @Bean
+    Queue fraudReviewRequiredDeadLetterQueue() {
+        return new Queue(FRAUD_REVIEW_REQUIRED_DLQ, true);
+    }
+
+    @Bean
+    Queue reviewDecisionDeadLetterQueue() {
+        return new Queue(REVIEW_DECISION_DLQ, true);
     }
 
     @Bean
@@ -102,7 +133,45 @@ public class RabbitConfig {
     }
 
     @Bean
+    Binding fraudApprovedDeadLetterBinding(DirectExchange deadLetterExchange, Queue fraudApprovedDeadLetterQueue) {
+        return BindingBuilder.bind(fraudApprovedDeadLetterQueue)
+            .to(deadLetterExchange)
+            .with(FRAUD_APPROVED_DLQ);
+    }
+
+    @Bean
+    Binding fraudBlockedDeadLetterBinding(DirectExchange deadLetterExchange, Queue fraudBlockedDeadLetterQueue) {
+        return BindingBuilder.bind(fraudBlockedDeadLetterQueue)
+            .to(deadLetterExchange)
+            .with(FRAUD_BLOCKED_DLQ);
+    }
+
+    @Bean
+    Binding fraudReviewRequiredDeadLetterBinding(
+        DirectExchange deadLetterExchange,
+        Queue fraudReviewRequiredDeadLetterQueue
+    ) {
+        return BindingBuilder.bind(fraudReviewRequiredDeadLetterQueue)
+            .to(deadLetterExchange)
+            .with(FRAUD_REVIEW_REQUIRED_DLQ);
+    }
+
+    @Bean
+    Binding reviewDecisionDeadLetterBinding(DirectExchange deadLetterExchange, Queue reviewDecisionDeadLetterQueue) {
+        return BindingBuilder.bind(reviewDecisionDeadLetterQueue)
+            .to(deadLetterExchange)
+            .with(REVIEW_DECISION_DLQ);
+    }
+
+    @Bean
     Jackson2JsonMessageConverter jackson2JsonMessageConverter() {
         return new Jackson2JsonMessageConverter();
+    }
+
+    private Queue deadLetterEnabledQueue(String queueName, String deadLetterRoutingKey) {
+        return QueueBuilder.durable(queueName)
+            .withArgument("x-dead-letter-exchange", DEAD_LETTER_EXCHANGE)
+            .withArgument("x-dead-letter-routing-key", deadLetterRoutingKey)
+            .build();
     }
 }

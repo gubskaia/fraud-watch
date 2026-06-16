@@ -1,4 +1,4 @@
-FROM maven:3.9.11-eclipse-temurin-21 AS build
+FROM maven:3.9.11-eclipse-temurin-17 AS build
 WORKDIR /workspace
 
 COPY pom.xml .
@@ -7,7 +7,7 @@ COPY services services
 
 RUN mvn -pl services/transaction-service -am -DskipTests package
 
-FROM eclipse-temurin:21-jre
+FROM eclipse-temurin:17-jre
 WORKDIR /app
 
 COPY --from=build /workspace/services/transaction-service/target/transaction-service-0.1.0-SNAPSHOT.jar app.jar
@@ -15,4 +15,3 @@ COPY --from=build /workspace/services/transaction-service/target/transaction-ser
 EXPOSE 8082
 
 ENTRYPOINT ["java", "-jar", "/app/app.jar", "--spring.profiles.active=docker"]
-

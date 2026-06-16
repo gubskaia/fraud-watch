@@ -41,7 +41,7 @@ docker compose down
 ### Build failures
 
 - Ensure Docker can access the repository directory
-- Ensure Java 21 is used inside container builds
+- Ensure Java 17 is used inside container builds
 
 ### Port collisions
 
@@ -50,4 +50,3 @@ docker compose down
 ### Service startup order
 
 - Databases, RabbitMQ, and Redis must become healthy before dependent services stabilize
-
