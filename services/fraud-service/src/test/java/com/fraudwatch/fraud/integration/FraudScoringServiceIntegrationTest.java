@@ -54,7 +54,7 @@ class FraudScoringServiceIntegrationTest {
     }
 
     @Test
-    void shouldPersistBlockedDecisionWhenLargeAmountAndNewDeviceRulesTrigger() {
+    void shouldPersistBlockedDecisionWhenLargeAmountNewDeviceAndNewIpRulesTrigger() {
         TransactionCreatedPayload payload = new TransactionCreatedPayload(
             101L,
             "tx-it-101",
@@ -75,9 +75,10 @@ class FraudScoringServiceIntegrationTest {
 
         FraudDecision decision = fraudDecisionRepository.findByTransactionId(101L).orElseThrow();
         assertThat(decision.getDecision()).isEqualTo(FraudDecisionStatus.BLOCKED);
-        assertThat(decision.getRiskScore()).isEqualTo(70);
+        assertThat(decision.getRiskScore()).isEqualTo(85);
         assertThat(decision.getTriggeredRules())
             .contains("LARGE_AMOUNT_DEVIATION")
-            .contains("NEW_DEVICE_DETECTION");
+            .contains("NEW_DEVICE_DETECTION")
+            .contains("NEW_IP_DETECTION");
     }
 }

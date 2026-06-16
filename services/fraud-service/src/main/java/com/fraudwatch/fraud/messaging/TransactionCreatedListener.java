@@ -1,12 +1,12 @@
 package com.fraudwatch.fraud.messaging;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fraudwatch.events.EventEnvelope;
 import com.fraudwatch.events.transaction.TransactionCreatedPayload;
 import com.fraudwatch.fraud.config.RabbitConfig;
 import com.fraudwatch.fraud.service.FraudScoringService;
+import java.io.IOException;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
@@ -30,7 +30,7 @@ public class TransactionCreatedListener {
                 }
             );
             fraudScoringService.processTransactionCreated(event.payload(), event.correlationId());
-        } catch (JsonProcessingException exception) {
+        } catch (IOException exception) {
             throw new IllegalArgumentException("Unable to parse TransactionCreated event", exception);
         }
     }

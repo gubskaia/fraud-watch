@@ -3,4 +3,6 @@ spring:
     url: jdbc:postgresql://postgres-notification:5432/notification_db
   rabbitmq:
     host: rabbitmq
-
+    listener:
+      simple:
+        default-requeue-rejected: false

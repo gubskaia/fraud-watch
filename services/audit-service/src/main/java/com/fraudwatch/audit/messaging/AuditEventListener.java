@@ -1,6 +1,5 @@
 package com.fraudwatch.audit.messaging;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fraudwatch.audit.config.RabbitConfig;
@@ -9,6 +8,7 @@ import com.fraudwatch.events.EventEnvelope;
 import com.fraudwatch.events.fraud.FraudDecisionPayload;
 import com.fraudwatch.events.review.ReviewDecisionMadePayload;
 import com.fraudwatch.events.transaction.TransactionCreatedPayload;
+import java.io.IOException;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
@@ -86,9 +86,8 @@ public class AuditEventListener {
     private <T> EventEnvelope<T> read(byte[] rawMessage, TypeReference<EventEnvelope<T>> typeReference) {
         try {
             return objectMapper.readValue(rawMessage, typeReference);
-        } catch (JsonProcessingException exception) {
+        } catch (IOException exception) {
             throw new IllegalArgumentException("Unable to parse audit event", exception);
         }
     }
 }
-
