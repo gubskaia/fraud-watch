@@ -31,7 +31,12 @@ jobs:
       fail-fast: false
       matrix:
         module:
+          - services/api-gateway
+          - services/auth-service
           - services/fraud-service
+          - services/review-service
+          - services/audit-service
+          - services/notification-service
           - services/transaction-service
 
     steps:

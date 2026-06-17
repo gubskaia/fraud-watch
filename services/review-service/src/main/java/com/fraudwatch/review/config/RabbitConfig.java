@@ -8,6 +8,7 @@ import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 @Configuration
 public class RabbitConfig {
@@ -50,7 +51,10 @@ public class RabbitConfig {
     }
 
     @Bean
-    Binding reviewRequiredBinding(DirectExchange fraudExchange, Queue reviewRequiredQueue) {
+    Binding reviewRequiredBinding(
+        @Qualifier("fraudExchange") DirectExchange fraudExchange,
+        @Qualifier("reviewRequiredQueue") Queue reviewRequiredQueue
+    ) {
         return BindingBuilder.bind(reviewRequiredQueue)
             .to(fraudExchange)
             .with(REVIEW_REQUIRED_ROUTING_KEY);
@@ -58,8 +62,8 @@ public class RabbitConfig {
 
     @Bean
     Binding reviewRequiredDeadLetterBinding(
-        DirectExchange deadLetterExchange,
-        Queue reviewRequiredDeadLetterQueue
+        @Qualifier("deadLetterExchange") DirectExchange deadLetterExchange,
+        @Qualifier("reviewRequiredDeadLetterQueue") Queue reviewRequiredDeadLetterQueue
     ) {
         return BindingBuilder.bind(reviewRequiredDeadLetterQueue)
             .to(deadLetterExchange)
