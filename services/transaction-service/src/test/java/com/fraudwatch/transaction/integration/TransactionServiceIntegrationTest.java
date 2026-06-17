@@ -58,8 +58,8 @@ class TransactionServiceIntegrationTest {
         registry.add("spring.datasource.password", postgres::getPassword);
         registry.add("spring.rabbitmq.host", rabbitMq::getHost);
         registry.add("spring.rabbitmq.port", rabbitMq::getAmqpPort);
-        registry.add("spring.rabbitmq.username", () -> "fraudwatch");
-        registry.add("spring.rabbitmq.password", () -> "fraudwatch");
+        registry.add("spring.rabbitmq.username", rabbitMq::getAdminUsername);
+        registry.add("spring.rabbitmq.password", rabbitMq::getAdminPassword);
     }
 
     @BeforeEach

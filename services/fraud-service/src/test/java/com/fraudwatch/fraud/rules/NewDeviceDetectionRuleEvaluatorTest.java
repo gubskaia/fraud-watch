@@ -33,12 +33,12 @@ class NewDeviceDetectionRuleEvaluatorTest {
     @BeforeEach
     void setUp() {
         evaluator = new NewDeviceDetectionRuleEvaluator(stringRedisTemplate);
-        when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);
     }
 
     @Test
     void shouldMatchWhenDeviceIsNew() {
         FraudRule rule = rule("NEW_DEVICE_DETECTION", 25);
+        when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);
         when(stringRedisTemplate.hasKey("fraud:device:account:10:device-1")).thenReturn(false);
 
         assertThat(evaluator.evaluate(rule, context("device-1")))
@@ -53,6 +53,7 @@ class NewDeviceDetectionRuleEvaluatorTest {
     @Test
     void shouldNotMatchWhenDeviceWasSeenBefore() {
         FraudRule rule = rule("NEW_DEVICE_DETECTION", 25);
+        when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);
         when(stringRedisTemplate.hasKey("fraud:device:account:10:device-1")).thenReturn(true);
 
         assertThat(evaluator.evaluate(rule, context("device-1"))).isEmpty();
