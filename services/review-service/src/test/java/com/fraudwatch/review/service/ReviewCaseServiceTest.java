@@ -18,6 +18,7 @@ import com.fraudwatch.review.dto.AnalystCommentRequest;
 import com.fraudwatch.review.dto.AssignCaseRequest;
 import com.fraudwatch.review.dto.ReviewCaseResponse;
 import com.fraudwatch.review.dto.ReviewDecisionRequest;
+import com.fraudwatch.review.exception.ReviewBusinessException;
 import com.fraudwatch.review.mapper.ReviewMapper;
 import com.fraudwatch.review.messaging.ReviewDecisionPublisher;
 import com.fraudwatch.review.repository.AnalystCommentRepository;
@@ -33,6 +34,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 
 @ExtendWith(MockitoExtension.class)
 class ReviewCaseServiceTest {
@@ -154,6 +156,39 @@ class ReviewCaseServiceTest {
     }
 
     @Test
+    void shouldBlockOpenCaseAndPublishDecision() {
+        FraudCase fraudCase = openCase();
+        ReasonCode reasonCode = reasonCode("CONFIRMED_FRAUD");
+
+        when(fraudCaseRepository.findDetailedById(7L)).thenReturn(Optional.of(fraudCase));
+        when(reasonCodeRepository.findByCodeAndActiveTrue("CONFIRMED_FRAUD")).thenReturn(Optional.of(reasonCode));
+        when(analystCommentRepository.findAllByFraudCaseOrderByCreatedAtAsc(fraudCase)).thenReturn(List.of());
+        when(reviewActionRepository.findAllByFraudCaseOrderByCreatedAtAsc(fraudCase)).thenAnswer(invocation -> {
+            ReviewAction action = new ReviewAction();
+            action.setActionType(ReviewActionType.BLOCKED);
+            action.setAnalyst("analyst-3");
+            action.setReasonCode(reasonCode);
+            action.setDetails("Confirmed account takeover");
+            return List.of(action);
+        });
+        when(reviewActionRepository.save(any(ReviewAction.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        ReviewCaseResponse response = reviewCaseService.blockCase(
+            7L,
+            new ReviewDecisionRequest(" analyst-3 ", "CONFIRMED_FRAUD", "Confirmed account takeover")
+        );
+
+        assertThat(fraudCase.getStatus()).isEqualTo(FraudCaseStatus.BLOCKED);
+        assertThat(fraudCase.getAssignedTo()).isEqualTo("analyst-3");
+        assertThat(fraudCase.getReasonCode()).isEqualTo(reasonCode);
+        assertThat(fraudCase.getDecisionAt()).isNotNull();
+        assertThat(response.status()).isEqualTo("BLOCKED");
+        assertThat(response.reasonCode()).isEqualTo("CONFIRMED_FRAUD");
+
+        verify(reviewDecisionPublisher).publish(fraudCase, "analyst-3");
+    }
+
+    @Test
     void shouldAddCommentWithoutPublishingDecision() {
         FraudCase fraudCase = openCase();
         when(fraudCaseRepository.findDetailedById(7L)).thenReturn(Optional.of(fraudCase));
@@ -186,6 +221,46 @@ class ReviewCaseServiceTest {
         verify(reviewDecisionPublisher, never()).publish(any(), any());
         verify(reviewActionRepository).save(any(ReviewAction.class));
         verify(analystCommentRepository).save(any(AnalystComment.class));
+    }
+
+    @Test
+    void shouldRejectFinalizingAlreadyClosedCase() {
+        FraudCase fraudCase = openCase();
+        fraudCase.setStatus(FraudCaseStatus.APPROVED);
+        when(fraudCaseRepository.findDetailedById(7L)).thenReturn(Optional.of(fraudCase));
+
+        ReviewBusinessException exception = org.junit.jupiter.api.Assertions.assertThrows(
+            ReviewBusinessException.class,
+            () -> reviewCaseService.blockCase(
+                7L,
+                new ReviewDecisionRequest("analyst-3", "CONFIRMED_FRAUD", "Confirmed account takeover")
+            )
+        );
+
+        assertThat(exception.getStatus()).isEqualTo(HttpStatus.CONFLICT);
+        assertThat(exception.getMessage()).isEqualTo("Review case is already finalized");
+        verify(reviewDecisionPublisher, never()).publish(any(), any());
+        verify(reviewActionRepository, never()).save(any());
+    }
+
+    @Test
+    void shouldRejectUnknownReasonCode() {
+        FraudCase fraudCase = openCase();
+        when(fraudCaseRepository.findDetailedById(7L)).thenReturn(Optional.of(fraudCase));
+        when(reasonCodeRepository.findByCodeAndActiveTrue("UNKNOWN_CODE")).thenReturn(Optional.empty());
+
+        ReviewBusinessException exception = org.junit.jupiter.api.Assertions.assertThrows(
+            ReviewBusinessException.class,
+            () -> reviewCaseService.approveCase(
+                7L,
+                new ReviewDecisionRequest("analyst-1", "UNKNOWN_CODE", "Looks legitimate")
+            )
+        );
+
+        assertThat(exception.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(exception.getMessage()).isEqualTo("Reason code is invalid");
+        verify(reviewDecisionPublisher, never()).publish(any(), any());
+        verify(reviewActionRepository, never()).save(any());
     }
 
     private FraudCase openCase() {
