@@ -4,7 +4,8 @@ server:
 spring:
   cloud:
     gateway:
-      mvc:
+      server:
+        webmvc:
         routes:
           - id: auth-service
             uri: http://auth-service:8081
