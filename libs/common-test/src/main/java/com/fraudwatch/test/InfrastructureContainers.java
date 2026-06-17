@@ -23,7 +23,8 @@ public final class InfrastructureContainers {
 
     public static RabbitMQContainer rabbitMq() {
         return new RabbitMQContainer(RABBIT_IMAGE)
-            .withUser("fraudwatch", "fraudwatch");
+            .withEnv("RABBITMQ_DEFAULT_USER", "fraudwatch")
+            .withEnv("RABBITMQ_DEFAULT_PASS", "fraudwatch");
     }
 
     public static GenericContainer<?> redis() {

@@ -49,8 +49,8 @@ class FraudScoringServiceIntegrationTest {
         registry.add("spring.data.redis.port", () -> redis.getMappedPort(6379));
         registry.add("spring.rabbitmq.host", rabbitMq::getHost);
         registry.add("spring.rabbitmq.port", rabbitMq::getAmqpPort);
-        registry.add("spring.rabbitmq.username", () -> "fraudwatch");
-        registry.add("spring.rabbitmq.password", () -> "fraudwatch");
+        registry.add("spring.rabbitmq.username", rabbitMq::getAdminUsername);
+        registry.add("spring.rabbitmq.password", rabbitMq::getAdminPassword);
     }
 
     @Test
@@ -66,7 +66,7 @@ class FraudScoringServiceIntegrationTest {
             "ECOM",
             "DEBIT",
             "PENDING_REVIEW",
-            Instant.now(),
+            Instant.parse("2026-01-15T12:00:00Z"),
             "device-it-1",
             "10.0.0.1"
         );

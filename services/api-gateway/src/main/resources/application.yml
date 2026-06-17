@@ -6,7 +6,8 @@ spring:
     name: api-gateway
   cloud:
     gateway:
-      mvc:
+      server:
+        webmvc:
         routes:
           - id: auth-service
             uri: http://localhost:8081

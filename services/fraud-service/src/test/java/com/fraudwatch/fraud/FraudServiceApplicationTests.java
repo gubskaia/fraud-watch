@@ -1,10 +1,41 @@
 package com.fraudwatch.fraud;
 
+import com.fraudwatch.test.InfrastructureContainers;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.containers.RabbitMQContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 @SpringBootTest
+@Testcontainers
 class FraudServiceApplicationTests {
+
+    @Container
+    static final PostgreSQLContainer<?> postgres = InfrastructureContainers.postgres("fraud_db_smoke_test");
+
+    @Container
+    static final GenericContainer<?> redis = InfrastructureContainers.redis();
+
+    @Container
+    static final RabbitMQContainer rabbitMq = InfrastructureContainers.rabbitMq();
+
+    @DynamicPropertySource
+    static void overrideProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", postgres::getJdbcUrl);
+        registry.add("spring.datasource.username", postgres::getUsername);
+        registry.add("spring.datasource.password", postgres::getPassword);
+        registry.add("spring.data.redis.host", redis::getHost);
+        registry.add("spring.data.redis.port", () -> redis.getMappedPort(6379));
+        registry.add("spring.rabbitmq.host", rabbitMq::getHost);
+        registry.add("spring.rabbitmq.port", rabbitMq::getAmqpPort);
+        registry.add("spring.rabbitmq.username", rabbitMq::getAdminUsername);
+        registry.add("spring.rabbitmq.password", rabbitMq::getAdminPassword);
+    }
 
     @Test
     void contextLoads() {

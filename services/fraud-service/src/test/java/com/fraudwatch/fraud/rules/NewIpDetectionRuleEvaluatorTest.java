@@ -34,11 +34,11 @@ class NewIpDetectionRuleEvaluatorTest {
     @BeforeEach
     void setUp() {
         evaluator = new NewIpDetectionRuleEvaluator(stringRedisTemplate);
-        when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);
     }
 
     @Test
     void shouldFlagPreviouslyUnseenIpAddress() {
+        when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);
         when(stringRedisTemplate.hasKey("fraud:ip:account:10:203.0.113.15")).thenReturn(false);
 
         Optional<RuleMatch> result = evaluator.evaluate(rule(), context("203.0.113.15"));
@@ -50,6 +50,7 @@ class NewIpDetectionRuleEvaluatorTest {
 
     @Test
     void shouldIgnorePreviouslySeenIpAddress() {
+        when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);
         when(stringRedisTemplate.hasKey("fraud:ip:account:10:203.0.113.15")).thenReturn(true);
 
         Optional<RuleMatch> result = evaluator.evaluate(rule(), context("203.0.113.15"));
