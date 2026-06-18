@@ -29,6 +29,8 @@ class AuditServiceApplicationTests {
         registry.add("spring.rabbitmq.port", rabbitMq::getAmqpPort);
         registry.add("spring.rabbitmq.username", rabbitMq::getAdminUsername);
         registry.add("spring.rabbitmq.password", rabbitMq::getAdminPassword);
+        registry.add("spring.rabbitmq.listener.simple.auto-startup", () -> false);
+        registry.add("spring.rabbitmq.listener.direct.auto-startup", () -> false);
     }
 
     @Test
