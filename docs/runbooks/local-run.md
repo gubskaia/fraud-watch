@@ -30,11 +30,44 @@ docker compose down
 - `http://localhost:8085/actuator/health`
 - `http://localhost:8086/actuator/health`
 
+### Gateway-routed APIs
+
+- `http://localhost:8080/api/auth/register`
+- `http://localhost:8080/api/accounts`
+- `http://localhost:8080/api/transactions`
+- `http://localhost:8080/api/reviews/cases`
+- `http://localhost:8080/api/fraud/decisions`
+- `http://localhost:8080/api/audit/records`
+- `http://localhost:8080/api/notifications`
+
+## Demo Scenario
+
+Run the scripted end-to-end flow after all containers are healthy:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\demo\full-flow.ps1
+```
+
+What the script does:
+
+- registers a unique demo user through `api-gateway`
+- creates a funded account
+- submits a transaction designed to trigger `UNDER_REVIEW`
+- waits for the review case, assigns it, and blocks it
+- waits for the transaction to become `BLOCKED`
+- fetches the related audit records and notifications
+
 ### Infrastructure UIs
 
 - RabbitMQ: `http://localhost:15672`
 - Prometheus: `http://localhost:9090`
 - Grafana: `http://localhost:3000`
+
+### Grafana dashboard
+
+- Sign in with `admin` / `admin`
+- Open the preprovisioned `FraudWatch Overview` dashboard
+- Confirm service availability, HTTP throughput, latency, JVM memory, and RabbitMQ activity
 
 ## Troubleshooting
 

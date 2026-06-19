@@ -5,7 +5,7 @@ FraudWatch is a Java 17 / Spring Boot microservice platform for real-time bankin
 ## What Is Implemented
 
 - Root Maven monorepo with shared library modules
-- `api-gateway` with routing, JWT validation, correlation id propagation, and request logging
+- `api-gateway` with routing for all user-facing APIs, JWT validation, correlation id propagation, and request logging
 - `auth-service` with user, role, permission, refresh token model and auth API
 - `transaction-service` with account creation, idempotent transaction creation, and transaction lifecycle updates
 - `fraud-service` with seeded fraud rules, Redis-backed rule checks, scoring, and decision publishing
@@ -50,7 +50,7 @@ fraudwatch/
 
 | Service | Port | Responsibility |
 | --- | --- | --- |
-| `api-gateway` | `8080` | Entry point, route forwarding, JWT validation, correlation id propagation |
+| `api-gateway` | `8080` | Entry point, route forwarding to all public service APIs, JWT validation, correlation id propagation |
 | `auth-service` | `8081` | Register/login/refresh, users, roles, permissions |
 | `transaction-service` | `8082` | Accounts, transactions, idempotency, transaction events |
 | `fraud-service` | `8083` | Fraud rule execution, scoring, fraud decisions |
@@ -102,9 +102,21 @@ docker compose up --build
 docker compose down
 ```
 
+### Run The End-To-End Demo Flow
+
+After the stack is healthy, execute:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\demo\full-flow.ps1
+```
+
+The script registers a fresh demo user through the gateway, creates an account, submits a transaction that should enter manual review, blocks the review case, then fetches the resulting transaction, audit records, and notifications.
+
 ### Useful Endpoints
 
 - Gateway Swagger: `http://localhost:8080/swagger-ui.html`
+- Gateway Audit API: `http://localhost:8080/api/audit/records`
+- Gateway Notification API: `http://localhost:8080/api/notifications`
 - Auth Swagger: `http://localhost:8081/swagger-ui.html`
 - Transaction Swagger: `http://localhost:8082/swagger-ui.html`
 - Fraud Swagger: `http://localhost:8083/swagger-ui.html`
@@ -120,7 +132,7 @@ docker compose down
 - The repository is configured for Java 17, so the local shell should use JDK 17 or newer.
 - Dockerfiles build each service from the root monorepo using Maven.
 - Prometheus scraping is wired through `/actuator/prometheus`.
-- Grafana provisioning is included; dashboards can be added under `infrastructure/grafana/dashboards`.
+- Grafana provisioning is included with a preloaded `FraudWatch Overview` dashboard under `infrastructure/grafana/dashboards`.
 
 ## Next Recommended Steps
 

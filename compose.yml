@@ -223,6 +223,10 @@ services:
         condition: service_started
       review-service:
         condition: service_started
+      audit-service:
+        condition: service_started
+      notification-service:
+        condition: service_started
     ports:
       - "8080:8080"
 

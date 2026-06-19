@@ -23,6 +23,14 @@ spring:
             uri: http://fraud-service:8083
             predicates:
               - Path=/api/fraud/**
+          - id: audit-service
+            uri: http://audit-service:8085
+            predicates:
+              - Path=/api/audit/**
+          - id: notification-service
+            uri: http://notification-service:8086
+            predicates:
+              - Path=/api/notifications/**
 
 gateway:
   security:
