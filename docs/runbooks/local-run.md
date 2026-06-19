@@ -30,6 +30,16 @@ docker compose down
 - `http://localhost:8085/actuator/health`
 - `http://localhost:8086/actuator/health`
 
+### Gateway-routed APIs
+
+- `http://localhost:8080/api/auth/register`
+- `http://localhost:8080/api/accounts`
+- `http://localhost:8080/api/transactions`
+- `http://localhost:8080/api/reviews/cases`
+- `http://localhost:8080/api/fraud/decisions`
+- `http://localhost:8080/api/audit/records`
+- `http://localhost:8080/api/notifications`
+
 ### Infrastructure UIs
 
 - RabbitMQ: `http://localhost:15672`

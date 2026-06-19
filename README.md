@@ -5,7 +5,7 @@ FraudWatch is a Java 17 / Spring Boot microservice platform for real-time bankin
 ## What Is Implemented
 
 - Root Maven monorepo with shared library modules
-- `api-gateway` with routing, JWT validation, correlation id propagation, and request logging
+- `api-gateway` with routing for all user-facing APIs, JWT validation, correlation id propagation, and request logging
 - `auth-service` with user, role, permission, refresh token model and auth API
 - `transaction-service` with account creation, idempotent transaction creation, and transaction lifecycle updates
 - `fraud-service` with seeded fraud rules, Redis-backed rule checks, scoring, and decision publishing
@@ -50,7 +50,7 @@ fraudwatch/
 
 | Service | Port | Responsibility |
 | --- | --- | --- |
-| `api-gateway` | `8080` | Entry point, route forwarding, JWT validation, correlation id propagation |
+| `api-gateway` | `8080` | Entry point, route forwarding to all public service APIs, JWT validation, correlation id propagation |
 | `auth-service` | `8081` | Register/login/refresh, users, roles, permissions |
 | `transaction-service` | `8082` | Accounts, transactions, idempotency, transaction events |
 | `fraud-service` | `8083` | Fraud rule execution, scoring, fraud decisions |
@@ -105,6 +105,8 @@ docker compose down
 ### Useful Endpoints
 
 - Gateway Swagger: `http://localhost:8080/swagger-ui.html`
+- Gateway Audit API: `http://localhost:8080/api/audit/records`
+- Gateway Notification API: `http://localhost:8080/api/notifications`
 - Auth Swagger: `http://localhost:8081/swagger-ui.html`
 - Transaction Swagger: `http://localhost:8082/swagger-ui.html`
 - Fraud Swagger: `http://localhost:8083/swagger-ui.html`
