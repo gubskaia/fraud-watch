@@ -132,7 +132,7 @@ The script registers a fresh demo user through the gateway, creates an account, 
 - The repository is configured for Java 17, so the local shell should use JDK 17 or newer.
 - Dockerfiles build each service from the root monorepo using Maven.
 - Prometheus scraping is wired through `/actuator/prometheus`.
-- Grafana provisioning is included; dashboards can be added under `infrastructure/grafana/dashboards`.
+- Grafana provisioning is included with a preloaded `FraudWatch Overview` dashboard under `infrastructure/grafana/dashboards`.
 
 ## Next Recommended Steps
 

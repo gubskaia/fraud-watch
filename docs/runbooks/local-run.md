@@ -63,6 +63,12 @@ What the script does:
 - Prometheus: `http://localhost:9090`
 - Grafana: `http://localhost:3000`
 
+### Grafana dashboard
+
+- Sign in with `admin` / `admin`
+- Open the preprovisioned `FraudWatch Overview` dashboard
+- Confirm service availability, HTTP throughput, latency, JVM memory, and RabbitMQ activity
+
 ## Troubleshooting
 
 ### Build failures
