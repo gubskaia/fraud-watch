@@ -102,6 +102,16 @@ docker compose up --build
 docker compose down
 ```
 
+### Run The End-To-End Demo Flow
+
+After the stack is healthy, execute:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\demo\full-flow.ps1
+```
+
+The script registers a fresh demo user through the gateway, creates an account, submits a transaction that should enter manual review, blocks the review case, then fetches the resulting transaction, audit records, and notifications.
+
 ### Useful Endpoints
 
 - Gateway Swagger: `http://localhost:8080/swagger-ui.html`

@@ -40,6 +40,23 @@ docker compose down
 - `http://localhost:8080/api/audit/records`
 - `http://localhost:8080/api/notifications`
 
+## Demo Scenario
+
+Run the scripted end-to-end flow after all containers are healthy:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\demo\full-flow.ps1
+```
+
+What the script does:
+
+- registers a unique demo user through `api-gateway`
+- creates a funded account
+- submits a transaction designed to trigger `UNDER_REVIEW`
+- waits for the review case, assigns it, and blocks it
+- waits for the transaction to become `BLOCKED`
+- fetches the related audit records and notifications
+
 ### Infrastructure UIs
 
 - RabbitMQ: `http://localhost:15672`
