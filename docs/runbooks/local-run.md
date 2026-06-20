@@ -83,3 +83,4 @@ What the script does:
 ### Service startup order
 
 - Databases, RabbitMQ, and Redis must become healthy before dependent services stabilize
+- Application containers also expose `/actuator/health`, and Compose waits for healthy upstream services before starting `api-gateway` and `prometheus`
