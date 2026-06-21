@@ -76,6 +76,16 @@ fraudwatch/
 
 More detail is available in [docs/events/event-flow.md](/D:/fraudwatch/docs/events/event-flow.md).
 
+## Documentation
+
+- [Architecture Overview](/D:/fraudwatch/docs/architecture/overview.md)
+- [System Diagram](/D:/fraudwatch/docs/architecture/system-diagram.md)
+- [Transaction Review Sequence](/D:/fraudwatch/docs/diagrams/transaction-review-sequence.md)
+- [Service Data Models](/D:/fraudwatch/docs/erd/service-data-models.md)
+- [Service APIs](/D:/fraudwatch/docs/api/service-apis.md)
+- [Trade-Offs And Scaling Path](/D:/fraudwatch/docs/architecture/trade-offs-and-scaling.md)
+- [Local Runbook](/D:/fraudwatch/docs/runbooks/local-run.md)
+
 ## Local Development
 
 ### Prerequisites
@@ -96,6 +106,26 @@ More detail is available in [docs/events/event-flow.md](/D:/fraudwatch/docs/even
 docker compose up --build
 ```
 
+### Run A Quick Smoke Check
+
+After the stack is healthy, execute:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\dev\smoke-check.ps1
+```
+
+The smoke check waits for application health endpoints, validates each service `internal/info` response, and confirms that Prometheus, Grafana, and RabbitMQ are reachable.
+
+### Recreate The Stack From A Clean State
+
+To fully reset the local environment, rebuild the stack, and run the smoke check:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\dev\clean-start.ps1
+```
+
+This removes Compose volumes and should be treated as a local development reset.
+
 ### Stop the Stack
 
 ```powershell
@@ -110,7 +140,23 @@ After the stack is healthy, execute:
 powershell -ExecutionPolicy Bypass -File .\scripts\demo\full-flow.ps1
 ```
 
-The script registers a fresh demo user through the gateway, creates an account, submits a transaction that should enter manual review, blocks the review case, then fetches the resulting transaction, audit records, and notifications.
+By default the script runs the `review-block` scenario. You can also execute:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\demo\full-flow.ps1 -Scenario approved
+powershell -ExecutionPolicy Bypass -File .\scripts\demo\full-flow.ps1 -Scenario review-approve
+powershell -ExecutionPolicy Bypass -File .\scripts\demo\full-flow.ps1 -Scenario review-block
+powershell -ExecutionPolicy Bypass -File .\scripts\demo\full-flow.ps1 -Scenario direct-block
+```
+
+These scenarios cover approved flow, analyst approval, analyst block, and direct fraud block, then fetch the resulting transaction, audit records, and notifications.
+
+The script first waits for `api-gateway` health, so it can be started immediately after the stack begins stabilizing.
+
+For analyst/admin access in local environments, `auth-service` seeds these users automatically:
+
+- `analyst.demo` / `AnalystPass123!`
+- `admin.demo` / `AdminPass123!`
 
 ### Useful Endpoints
 
@@ -131,12 +177,14 @@ The script registers a fresh demo user through the gateway, creates an account, 
 
 - The repository is configured for Java 17, so the local shell should use JDK 17 or newer.
 - Dockerfiles build each service from the root monorepo using Maven.
+- Runtime images include `wget` so Docker healthchecks can probe `/actuator/health` inside each container.
+- Docker Compose now waits for application health endpoints before promoting downstream services such as `api-gateway` and `prometheus`.
 - Prometheus scraping is wired through `/actuator/prometheus`.
 - Grafana provisioning is included with a preloaded `FraudWatch Overview` dashboard under `infrastructure/grafana/dashboards`.
 
-## Next Recommended Steps
+## Project Status
 
-- Add end-to-end integration tests for the transaction to fraud to review lifecycle
-- Add root-level demo scripts and seed scenarios
-- Add richer Grafana dashboards and runbooks
-- Harden security between services and external clients
+- Core transaction, fraud, review, audit, and notification flows are implemented
+- Gateway-enforced RBAC is active for customer, analyst, and admin-facing API areas
+- CI validates Maven modules, Docker Compose configuration, the demo script syntax, and provisioned observability assets
+- The repository includes a runnable local stack, a scripted gateway demo flow, and a preloaded Grafana overview dashboard

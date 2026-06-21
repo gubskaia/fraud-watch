@@ -55,3 +55,8 @@ gateway:
     jwt:
       issuer: fraudwatch-auth-service
       secret: ZmFrZS1mcmF1ZHdhdGNoLWRldi1zZWNyZXQtZmFrZS1mcmF1ZHdhdGNoLWRldi1zZWNyZXQ=
+
+fraudwatch:
+  observability:
+    http-correlation:
+      enabled: false

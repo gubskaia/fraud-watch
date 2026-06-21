@@ -50,3 +50,9 @@ FraudWatch is organized as a microservice monorepo with clear bounded contexts.
 - PostgreSQL per service
 - Prometheus and Grafana for metrics
 
+## Related Documents
+
+- [System Diagram](/D:/fraudwatch/docs/architecture/system-diagram.md)
+- [Transaction Review Sequence](/D:/fraudwatch/docs/diagrams/transaction-review-sequence.md)
+- [Service Data Models](/D:/fraudwatch/docs/erd/service-data-models.md)
+- [Trade-Offs And Scaling Path](/D:/fraudwatch/docs/architecture/trade-offs-and-scaling.md)

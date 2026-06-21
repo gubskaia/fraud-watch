@@ -141,6 +141,11 @@ services:
         condition: service_healthy
     ports:
       - "8081:8081"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8081/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
 
   transaction-service:
     build:
@@ -154,6 +159,11 @@ services:
         condition: service_healthy
     ports:
       - "8082:8082"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8082/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
 
   fraud-service:
     build:
@@ -169,6 +179,11 @@ services:
         condition: service_healthy
     ports:
       - "8083:8083"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8083/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
 
   review-service:
     build:
@@ -182,6 +197,11 @@ services:
         condition: service_healthy
     ports:
       - "8084:8084"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8084/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
 
   audit-service:
     build:
@@ -195,6 +215,11 @@ services:
         condition: service_healthy
     ports:
       - "8085:8085"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8085/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
 
   notification-service:
     build:
@@ -208,6 +233,11 @@ services:
         condition: service_healthy
     ports:
       - "8086:8086"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8086/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
 
   api-gateway:
     build:
@@ -216,19 +246,24 @@ services:
     container_name: fraudwatch-api-gateway
     depends_on:
       auth-service:
-        condition: service_started
+        condition: service_healthy
       transaction-service:
-        condition: service_started
+        condition: service_healthy
       fraud-service:
-        condition: service_started
+        condition: service_healthy
       review-service:
-        condition: service_started
+        condition: service_healthy
       audit-service:
-        condition: service_started
+        condition: service_healthy
       notification-service:
-        condition: service_started
+        condition: service_healthy
     ports:
       - "8080:8080"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
 
   prometheus:
     image: prom/prometheus:v2.54.1
@@ -239,7 +274,7 @@ services:
       - "9090:9090"
     depends_on:
       api-gateway:
-        condition: service_started
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:9090/-/healthy"]
       interval: 15s

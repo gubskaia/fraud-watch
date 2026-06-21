@@ -51,3 +51,9 @@
 
 - `review.decision-made`
 
+## Reliability Notes
+
+- Consumer queues use dead-letter routing for invalid or non-processable messages
+- Listener containers are configured with `default-requeue-rejected=false`
+- Review flow integration coverage verifies that an invalid `transaction.review-required` message is routed to `fraudwatch.review.transaction-review-required.dlq`
+- Shared `common-events` contract tests verify JSON serialization and envelope shape for transaction, fraud, review, and status-change events
