@@ -33,14 +33,21 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        module:
-          - services/api-gateway
-          - services/auth-service
-          - services/fraud-service
-          - services/review-service
-          - services/audit-service
-          - services/notification-service
-          - services/transaction-service
+        include:
+          - module: services/api-gateway
+            artifact_name: services-api-gateway
+          - module: services/auth-service
+            artifact_name: services-auth-service
+          - module: services/fraud-service
+            artifact_name: services-fraud-service
+          - module: services/review-service
+            artifact_name: services-review-service
+          - module: services/audit-service
+            artifact_name: services-audit-service
+          - module: services/notification-service
+            artifact_name: services-notification-service
+          - module: services/transaction-service
+            artifact_name: services-transaction-service
 
     steps:
       - name: Checkout repository
@@ -63,7 +70,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: surefire-reports-${{ replace(matrix.module, '/', '-') }}
+          name: surefire-reports-${{ matrix.artifact_name }}
           path: |
             ${{ matrix.module }}/target/surefire-reports/**
             libs/**/target/surefire-reports/**
