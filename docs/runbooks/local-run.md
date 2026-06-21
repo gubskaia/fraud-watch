@@ -12,6 +12,14 @@ docker compose up --build
 docker compose -f .\compose.yml config
 ```
 
+## Run Stack Smoke Check
+
+After the containers are up, verify service and infrastructure readiness:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\dev\smoke-check.ps1
+```
+
 ## Stop Everything
 
 ```powershell

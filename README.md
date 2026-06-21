@@ -96,6 +96,16 @@ More detail is available in [docs/events/event-flow.md](/D:/fraudwatch/docs/even
 docker compose up --build
 ```
 
+### Run A Quick Smoke Check
+
+After the stack is healthy, execute:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\dev\smoke-check.ps1
+```
+
+The smoke check waits for application health endpoints, validates each service `internal/info` response, and confirms that Prometheus, Grafana, and RabbitMQ are reachable.
+
 ### Stop the Stack
 
 ```powershell
