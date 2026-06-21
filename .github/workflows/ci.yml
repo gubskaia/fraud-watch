@@ -63,7 +63,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: surefire-reports-${{ matrix.module }}
+          name: surefire-reports-${{ replace(matrix.module, '/', '-') }}
           path: |
             ${{ matrix.module }}/target/surefire-reports/**
             libs/**/target/surefire-reports/**
