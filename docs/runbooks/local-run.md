@@ -69,6 +69,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\demo\full-flow.ps1
 What the script does:
 
 - registers a unique demo user through `api-gateway`
+- logs in with the seeded analyst account `analyst.demo` / `AnalystPass123!`
 - creates a funded account
 - submits a transaction designed to trigger `UNDER_REVIEW`
 - waits for the review case, assigns it, and blocks it

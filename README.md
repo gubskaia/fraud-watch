@@ -132,6 +132,11 @@ powershell -ExecutionPolicy Bypass -File .\scripts\demo\full-flow.ps1
 
 The script registers a fresh demo user through the gateway, creates an account, submits a transaction that should enter manual review, blocks the review case, then fetches the resulting transaction, audit records, and notifications.
 
+For analyst/admin access in local environments, `auth-service` seeds these users automatically:
+
+- `analyst.demo` / `AnalystPass123!`
+- `admin.demo` / `AdminPass123!`
+
 ### Useful Endpoints
 
 - Gateway Swagger: `http://localhost:8080/swagger-ui.html`
@@ -159,5 +164,6 @@ The script registers a fresh demo user through the gateway, creates an account, 
 ## Project Status
 
 - Core transaction, fraud, review, audit, and notification flows are implemented
+- Gateway-enforced RBAC is active for customer, analyst, and admin-facing API areas
 - CI validates Maven modules, Docker Compose configuration, the demo script syntax, and provisioned observability assets
 - The repository includes a runnable local stack, a scripted gateway demo flow, and a preloaded Grafana overview dashboard

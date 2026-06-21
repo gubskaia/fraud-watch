@@ -59,6 +59,8 @@ $suffix = Get-Date -Format "yyyyMMddHHmmss"
 $username = "demo-$suffix"
 $email = "$username@fraudwatch.local"
 $password = "DemoPass123!"
+$analystUsername = "analyst.demo"
+$analystPassword = "AnalystPass123!"
 $accountNumber = "FW-DEMO-$suffix"
 $correlationId = "demo-flow-$suffix"
 
@@ -74,6 +76,17 @@ $authResponse = Invoke-JsonRequest -Method POST -Uri "$GatewayBaseUrl/api/auth/r
 $accessToken = $authResponse.accessToken
 $authHeaders = @{
     Authorization      = "Bearer $accessToken"
+    "X-Correlation-Id" = $correlationId
+}
+
+Write-Step "Logging in as the seeded analyst user for review operations"
+$analystAuthResponse = Invoke-JsonRequest -Method POST -Uri "$GatewayBaseUrl/api/auth/login" -Body @{
+    usernameOrEmail = $analystUsername
+    password        = $analystPassword
+}
+
+$analystHeaders = @{
+    Authorization      = "Bearer $($analystAuthResponse.accessToken)"
     "X-Correlation-Id" = $correlationId
 }
 
@@ -119,13 +132,13 @@ $reviewCases = Wait-Until `
 $reviewCase = @($reviewCases | Where-Object { $_.transactionId -eq $transactionId } | Select-Object -First 1)[0]
 
 Write-Step "Assigning the review case"
-$null = Invoke-JsonRequest -Method POST -Uri "$GatewayBaseUrl/api/reviews/cases/$($reviewCase.id)/assign" -Headers $authHeaders -Body @{
+$null = Invoke-JsonRequest -Method POST -Uri "$GatewayBaseUrl/api/reviews/cases/$($reviewCase.id)/assign" -Headers $analystHeaders -Body @{
     analyst = "demo-analyst"
     details = "Assigned by demo flow script"
 }
 
 Write-Step "Finalizing the case with a blocking decision"
-$null = Invoke-JsonRequest -Method POST -Uri "$GatewayBaseUrl/api/reviews/cases/$($reviewCase.id)/block" -Headers $authHeaders -Body @{
+$null = Invoke-JsonRequest -Method POST -Uri "$GatewayBaseUrl/api/reviews/cases/$($reviewCase.id)/block" -Headers $analystHeaders -Body @{
     analyst    = "demo-analyst"
     reasonCode = "CONFIRMED_FRAUD"
     details    = "Blocked as part of the end-to-end demo scenario"
@@ -146,13 +159,13 @@ Write-Step "Fetching related audit records"
 $auditRecords = Invoke-JsonRequest `
     -Method GET `
     -Uri "$GatewayBaseUrl/api/audit/records?aggregateType=TRANSACTION&aggregateId=$transactionId" `
-    -Headers $authHeaders
+    -Headers $analystHeaders
 
 Write-Step "Fetching generated notifications"
 $notifications = Invoke-JsonRequest `
     -Method GET `
     -Uri "$GatewayBaseUrl/api/notifications?recipientRef=review-case-$($reviewCase.id)" `
-    -Headers $authHeaders
+    -Headers $analystHeaders
 
 Write-Step "Demo flow completed"
 $summary = [pscustomobject]@{

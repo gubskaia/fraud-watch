@@ -3,6 +3,7 @@ package com.fraudwatch.gateway.config;
 import com.fraudwatch.gateway.security.JwtAuthenticationFilter;
 import com.fraudwatch.gateway.security.RestAccessDeniedHandler;
 import com.fraudwatch.gateway.security.RestAuthenticationEntryPoint;
+import org.springframework.http.HttpMethod;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -36,6 +37,15 @@ public class SecurityConfig {
                     "/api/auth/login",
                     "/api/auth/refresh"
                 ).permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/users/me").hasAuthority("USER_SELF_READ")
+                .requestMatchers(HttpMethod.POST, "/api/accounts", "/api/transactions").hasAuthority("TRANSACTION_CREATE")
+                .requestMatchers(HttpMethod.GET, "/api/accounts/**", "/api/transactions/**").hasAuthority("TRANSACTION_READ")
+                .requestMatchers(HttpMethod.GET, "/api/reviews/**").hasAuthority("REVIEW_CASE_READ")
+                .requestMatchers(HttpMethod.POST, "/api/reviews/**").hasAuthority("REVIEW_CASE_DECIDE")
+                .requestMatchers(HttpMethod.GET, "/api/fraud/rules", "/api/fraud/decisions/**").hasAuthority("FRAUD_RULE_READ")
+                .requestMatchers(HttpMethod.PUT, "/api/fraud/rules/**").hasAuthority("FRAUD_RULE_WRITE")
+                .requestMatchers(HttpMethod.GET, "/api/audit/**").hasAuthority("AUDIT_READ")
+                .requestMatchers(HttpMethod.GET, "/api/notifications/**").hasAuthority("NOTIFICATION_READ")
                 .requestMatchers("/api/**").authenticated()
                 .anyRequest().permitAll())
             .exceptionHandling(exceptions -> exceptions
@@ -45,4 +55,3 @@ public class SecurityConfig {
         return http.build();
     }
 }
-
