@@ -76,6 +76,16 @@ fraudwatch/
 
 More detail is available in [docs/events/event-flow.md](/D:/fraudwatch/docs/events/event-flow.md).
 
+## Documentation
+
+- [Architecture Overview](/D:/fraudwatch/docs/architecture/overview.md)
+- [System Diagram](/D:/fraudwatch/docs/architecture/system-diagram.md)
+- [Transaction Review Sequence](/D:/fraudwatch/docs/diagrams/transaction-review-sequence.md)
+- [Service Data Models](/D:/fraudwatch/docs/erd/service-data-models.md)
+- [Service APIs](/D:/fraudwatch/docs/api/service-apis.md)
+- [Trade-Offs And Scaling Path](/D:/fraudwatch/docs/architecture/trade-offs-and-scaling.md)
+- [Local Runbook](/D:/fraudwatch/docs/runbooks/local-run.md)
+
 ## Local Development
 
 ### Prerequisites
