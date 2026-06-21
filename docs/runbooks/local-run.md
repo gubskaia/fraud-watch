@@ -71,10 +71,19 @@ What the script does:
 - registers a unique demo user through `api-gateway`
 - logs in with the seeded analyst account `analyst.demo` / `AnalystPass123!`
 - creates a funded account
-- submits a transaction designed to trigger `UNDER_REVIEW`
-- waits for the review case, assigns it, and blocks it
-- waits for the transaction to become `BLOCKED`
+- runs one of the supported scenarios: `approved`, `review-approve`, `review-block`, `direct-block`
+- waits for `api-gateway` health before starting requests
+- waits for either a direct fraud outcome or a manual review branch
 - fetches the related audit records and notifications
+
+Example variants:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\demo\full-flow.ps1 -Scenario approved
+powershell -ExecutionPolicy Bypass -File .\scripts\demo\full-flow.ps1 -Scenario review-approve
+powershell -ExecutionPolicy Bypass -File .\scripts\demo\full-flow.ps1 -Scenario review-block
+powershell -ExecutionPolicy Bypass -File .\scripts\demo\full-flow.ps1 -Scenario direct-block
+```
 
 ### Infrastructure UIs
 

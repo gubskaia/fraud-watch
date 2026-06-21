@@ -140,7 +140,18 @@ After the stack is healthy, execute:
 powershell -ExecutionPolicy Bypass -File .\scripts\demo\full-flow.ps1
 ```
 
-The script registers a fresh demo user through the gateway, creates an account, submits a transaction that should enter manual review, blocks the review case, then fetches the resulting transaction, audit records, and notifications.
+By default the script runs the `review-block` scenario. You can also execute:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\demo\full-flow.ps1 -Scenario approved
+powershell -ExecutionPolicy Bypass -File .\scripts\demo\full-flow.ps1 -Scenario review-approve
+powershell -ExecutionPolicy Bypass -File .\scripts\demo\full-flow.ps1 -Scenario review-block
+powershell -ExecutionPolicy Bypass -File .\scripts\demo\full-flow.ps1 -Scenario direct-block
+```
+
+These scenarios cover approved flow, analyst approval, analyst block, and direct fraud block, then fetch the resulting transaction, audit records, and notifications.
+
+The script first waits for `api-gateway` health, so it can be started immediately after the stack begins stabilizing.
 
 For analyst/admin access in local environments, `auth-service` seeds these users automatically:
 
