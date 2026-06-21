@@ -136,9 +136,8 @@ The script registers a fresh demo user through the gateway, creates an account, 
 - Prometheus scraping is wired through `/actuator/prometheus`.
 - Grafana provisioning is included with a preloaded `FraudWatch Overview` dashboard under `infrastructure/grafana/dashboards`.
 
-## Next Recommended Steps
+## Project Status
 
-- Add end-to-end integration tests for the transaction to fraud to review lifecycle
-- Add root-level demo scripts and seed scenarios
-- Add richer Grafana dashboards and runbooks
-- Harden security between services and external clients
+- Core transaction, fraud, review, audit, and notification flows are implemented
+- CI validates Maven modules, Docker Compose configuration, the demo script syntax, and provisioned observability assets
+- The repository includes a runnable local stack, a scripted gateway demo flow, and a preloaded Grafana overview dashboard
