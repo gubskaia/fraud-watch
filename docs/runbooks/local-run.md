@@ -103,3 +103,9 @@ What the script does:
 
 - Databases, RabbitMQ, and Redis must become healthy before dependent services stabilize
 - Application containers also expose `/actuator/health`, and Compose waits for healthy upstream services before starting `api-gateway` and `prometheus`
+
+### Invalid event handling
+
+- Review, transaction, fraud, audit, and notification consumers are configured with DLQ-backed queues
+- Invalid messages are rejected without requeue and can be inspected in RabbitMQ dead-letter queues
+- Example DLQ name: `fraudwatch.review.transaction-review-required.dlq`

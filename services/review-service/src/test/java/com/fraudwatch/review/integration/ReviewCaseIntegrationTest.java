@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,6 +74,7 @@ class ReviewCaseIntegrationTest {
     void purgeQueues() {
         rabbitTemplate.execute(channel -> {
             channel.queuePurge(RabbitConfig.REVIEW_REQUIRED_QUEUE);
+            channel.queuePurge(RabbitConfig.REVIEW_REQUIRED_DLQ);
             channel.queueDeclare(REVIEW_EVENT_TEST_QUEUE, true, false, false, null);
             channel.queueBind(
                 REVIEW_EVENT_TEST_QUEUE,
@@ -115,6 +117,20 @@ class ReviewCaseIntegrationTest {
         assertThat(event.path("payload").path("analyst").asText()).isEqualTo("analyst-it");
     }
 
+    @Test
+    void shouldDeadLetterInvalidReviewRequiredEvent() {
+        rabbitTemplate.send(
+            RabbitConfig.FRAUD_EXCHANGE,
+            RabbitConfig.REVIEW_REQUIRED_ROUTING_KEY,
+            new Message("not-json".getBytes(), new MessageProperties())
+        );
+
+        Message deadLetterMessage = receiveEventually(RabbitConfig.REVIEW_REQUIRED_DLQ, 10_000);
+        assertThat(deadLetterMessage).isNotNull();
+        assertThat(new String(deadLetterMessage.getBody())).isEqualTo("not-json");
+        assertThat(fraudCaseRepository.findAll()).isEmpty();
+    }
+
     private EventEnvelope<FraudDecisionPayload> reviewRequiredEvent() {
         return new EventEnvelope<>(
             UUID.randomUUID().toString(),
@@ -134,5 +150,16 @@ class ReviewCaseIntegrationTest {
                 Instant.parse("2026-06-19T09:00:00Z")
             )
         );
+    }
+
+    private Message receiveEventually(String queueName, long timeoutMillis) {
+        long deadline = System.currentTimeMillis() + timeoutMillis;
+        while (System.currentTimeMillis() < deadline) {
+            Message message = rabbitTemplate.receive(queueName, 500);
+            if (message != null) {
+                return message;
+            }
+        }
+        return null;
     }
 }
