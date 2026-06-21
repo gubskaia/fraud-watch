@@ -106,6 +106,16 @@ powershell -ExecutionPolicy Bypass -File .\scripts\dev\smoke-check.ps1
 
 The smoke check waits for application health endpoints, validates each service `internal/info` response, and confirms that Prometheus, Grafana, and RabbitMQ are reachable.
 
+### Recreate The Stack From A Clean State
+
+To fully reset the local environment, rebuild the stack, and run the smoke check:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\dev\clean-start.ps1
+```
+
+This removes Compose volumes and should be treated as a local development reset.
+
 ### Stop the Stack
 
 ```powershell

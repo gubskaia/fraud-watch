@@ -20,6 +20,16 @@ After the containers are up, verify service and infrastructure readiness:
 powershell -ExecutionPolicy Bypass -File .\scripts\dev\smoke-check.ps1
 ```
 
+## Clean Rebuild The Stack
+
+To reset local state, rebuild the stack, and rerun the smoke check:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\dev\clean-start.ps1
+```
+
+This command removes Docker Compose volumes, so it should be used only when a local reset is intended.
+
 ## Stop Everything
 
 ```powershell

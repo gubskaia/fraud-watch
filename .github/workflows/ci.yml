@@ -81,7 +81,8 @@ jobs:
         run: |
           $scripts = @(
             './scripts/demo/full-flow.ps1',
-            './scripts/dev/smoke-check.ps1'
+            './scripts/dev/smoke-check.ps1',
+            './scripts/dev/clean-start.ps1'
           )
 
           foreach ($scriptPath in $scripts) {
