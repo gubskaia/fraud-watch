@@ -30,7 +30,7 @@ The repository is intended to be runnable locally as a full system, not just as 
 
 ## Architecture At A Glance
 
-![High-level architecture](diagrams/high-level-architecture-diagram.png)
+<img src="diagrams/high-level-architecture-diagram.png" alt="High-level architecture" width="900" />
 
 For more detail, see [Architecture Overview](docs/architecture/overview.md) and [System Diagram](docs/architecture/system-diagram.md).
 
@@ -101,31 +101,19 @@ More detail is available in [Event Flow](docs/events/event-flow.md) and [Transac
 
 ### Request Flow Through Gateway And Auth
 
-![Request flow through gateway and auth](diagrams/request-flow-throught_gateway_and-auth.png)
+<img src="diagrams/request-flow-throught_gateway_and-auth.png" alt="Request flow through gateway and auth" width="900" />
 
 ### Transaction To Fraud Decision
 
-![Transaction created to fraud decision](diagrams/from-transactioncreated-to-frauddecision.png)
+<img src="diagrams/from-transactioncreated-to-frauddecision.png" alt="Transaction created to fraud decision" width="900" />
 
 ### Transaction Lifecycle
 
-![Transaction lifecycle](diagrams/transaction-lifecycle.png)
+<img src="diagrams/transaction-lifecycle.png" alt="Transaction lifecycle" width="900" />
 
 ### Fraud Decision Logic
 
-![Fraud decision tree](diagrams/fraud-decision-tree.png)
-
-### Manual Review Escalation
-
-![Manual review escalation](diagrams/manual-review-escalation.png)
-
-### Audit Trail
-
-![Transaction audit trail](diagrams/transaction-audit-trail.png)
-
-### Observability Flow
-
-![Observability flow](diagrams/observability-flow.png)
+<img src="diagrams/fraud-decision-tree.png" alt="Fraud decision tree" width="760" />
 
 ## Documentation
 
