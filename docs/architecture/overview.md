@@ -52,7 +52,7 @@ FraudWatch is organized as a microservice monorepo with clear bounded contexts.
 
 ## Related Documents
 
-- [System Diagram](/D:/fraudwatch/docs/architecture/system-diagram.md)
-- [Transaction Review Sequence](/D:/fraudwatch/docs/diagrams/transaction-review-sequence.md)
-- [Service Data Models](/D:/fraudwatch/docs/erd/service-data-models.md)
-- [Trade-Offs And Scaling Path](/D:/fraudwatch/docs/architecture/trade-offs-and-scaling.md)
+- [System Diagram](system-diagram.md)
+- [Transaction Review Sequence](../diagrams/transaction-review-sequence.md)
+- [Service Data Models](../erd/service-data-models.md)
+- [Trade-Offs And Scaling Path](trade-offs-and-scaling.md)

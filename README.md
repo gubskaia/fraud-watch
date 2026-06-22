@@ -1,20 +1,52 @@
 # FraudWatch
 
-FraudWatch is a Java 17 / Spring Boot microservice platform for real-time banking fraud detection. The system is built as an event-driven monorepo with isolated services, per-service databases, RabbitMQ-based communication, Redis-backed behavioral checks, and an observability stack built around Actuator, Prometheus, and Grafana.
+FraudWatch is a Java 17 / Spring Boot microservice platform for real-time banking fraud detection. It is built as an event-driven monorepo with isolated bounded contexts, per-service PostgreSQL databases, RabbitMQ messaging, Redis-backed behavioral checks, and an observability stack based on Actuator, Prometheus, and Grafana.
 
-## What Is Implemented
+## Overview
 
-- Root Maven monorepo with shared library modules
-- `api-gateway` with routing for all user-facing APIs, JWT validation, correlation id propagation, and request logging
-- `auth-service` with user, role, permission, refresh token model and auth API
-- `transaction-service` with account creation, idempotent transaction creation, and transaction lifecycle updates
-- `fraud-service` with seeded fraud rules, Redis-backed rule checks, scoring, and decision publishing
-- `review-service` with fraud case creation, analyst decisions, comments, and review events
-- `audit-service` with immutable audit record storage and read-only API
-- `notification-service` with event-driven notifications, persisted delivery attempts, and mock delivery
-- Local Docker Compose stack for all services, databases, RabbitMQ, Redis, Prometheus, and Grafana
+This project models a realistic fraud decision pipeline:
 
-## Monorepo Layout
+- customers authenticate and submit transactions through `api-gateway`
+- `transaction-service` stores the request and publishes domain events
+- `fraud-service` scores the transaction using configurable rules and Redis-backed behavior signals
+- medium-risk cases go to `review-service` for analyst review
+- final outcomes are propagated back to `transaction-service`
+- `audit-service` stores an immutable operational trail
+- `notification-service` records and mock-delivers outcome notifications
+
+The repository is intended to be runnable locally as a full system, not just as isolated services.
+
+## Key Features
+
+- Spring Boot microservice monorepo with shared libraries
+- Gateway-enforced JWT authentication and permission-based RBAC
+- Idempotent transaction creation and transaction lifecycle management
+- Configurable fraud rules with direct approve, review, and block paths
+- Manual review workflow with assignment, comments, and analyst decisions
+- Immutable audit history built from domain events
+- Notification persistence with delivery attempt tracking
+- Docker Compose environment with PostgreSQL, RabbitMQ, Redis, Prometheus, and Grafana
+- CI checks for Maven validation, service tests, Docker image builds, Compose config, and demo/observability assets
+
+## Architecture At A Glance
+
+![High-level architecture](diagrams/high-level-architecture-diagram.png)
+
+For more detail, see [Architecture Overview](docs/architecture/overview.md) and [System Diagram](docs/architecture/system-diagram.md).
+
+## Services
+
+| Service | Port | Responsibility |
+| --- | --- | --- |
+| `api-gateway` | `8080` | External entry point, JWT validation, routing, correlation id propagation |
+| `auth-service` | `8081` | Registration, login, refresh tokens, users, roles, permissions |
+| `transaction-service` | `8082` | Accounts, transactions, idempotency, transaction status lifecycle |
+| `fraud-service` | `8083` | Fraud rule evaluation, scoring, decision publishing, Redis-backed checks |
+| `review-service` | `8084` | Manual review cases, analyst actions, comments, final review decisions |
+| `audit-service` | `8085` | Immutable audit records and read-only audit API |
+| `notification-service` | `8086` | Notification storage, templates, delivery attempts, mock delivery |
+
+## Repository Layout
 
 ```text
 fraudwatch/
@@ -26,65 +58,87 @@ fraudwatch/
     review-service/
     audit-service/
     notification-service/
-
   libs/
     common-events/
-    common-security/
     common-observability/
+    common-security/
     common-test/
-
   infrastructure/
-    prometheus/
     grafana/
-
+    prometheus/
   docs/
+    api/
     architecture/
+    diagrams/
+    erd/
     events/
     runbooks/
-
+  scripts/
+    demo/
+    dev/
   compose.yml
   pom.xml
 ```
 
-## Service Overview
+## Main Flow
 
-| Service | Port | Responsibility |
-| --- | --- | --- |
-| `api-gateway` | `8080` | Entry point, route forwarding to all public service APIs, JWT validation, correlation id propagation |
-| `auth-service` | `8081` | Register/login/refresh, users, roles, permissions |
-| `transaction-service` | `8082` | Accounts, transactions, idempotency, transaction events |
-| `fraud-service` | `8083` | Fraud rule execution, scoring, fraud decisions |
-| `review-service` | `8084` | Manual analyst review workflow |
-| `audit-service` | `8085` | Immutable audit trail |
-| `notification-service` | `8086` | Notification persistence and mock delivery |
-
-## Key Event Flow
-
-1. A client authenticates through `auth-service` and receives JWT tokens.
-2. A transaction is created through `api-gateway` into `transaction-service`.
-3. `transaction-service` stores the transaction in `PENDING_REVIEW` and publishes `TransactionCreated`.
-4. `fraud-service` consumes the event, executes enabled rules, persists a fraud decision, and publishes:
+1. The client authenticates through `auth-service` via `api-gateway`.
+2. A transaction is created in `transaction-service`.
+3. `transaction-service` publishes `TransactionCreated`.
+4. `fraud-service` consumes the event and emits one of:
    - `TransactionApproved`
    - `TransactionBlocked`
    - `TransactionReviewRequired`
-5. `transaction-service` consumes fraud decisions and updates transaction status.
-6. If the decision is `UNDER_REVIEW`, `review-service` creates a case for an analyst.
-7. Analyst actions publish `ReviewDecisionMade`.
-8. `transaction-service` consumes the final review decision and updates the transaction.
-9. `audit-service` stores key domain events as immutable audit records.
-10. `notification-service` stores and mock-delivers notifications for fraud and review outcomes.
+5. `transaction-service` updates the transaction lifecycle based on the fraud decision.
+6. If review is required, `review-service` creates a fraud case.
+7. An analyst approves or blocks the case in `review-service`.
+8. `review-service` publishes `ReviewDecisionMade`.
+9. `audit-service` and `notification-service` consume key outcome events.
 
-More detail is available in [docs/events/event-flow.md](/D:/fraudwatch/docs/events/event-flow.md).
+More detail is available in [Event Flow](docs/events/event-flow.md) and [Transaction Review Sequence](docs/diagrams/transaction-review-sequence.md).
+
+## Visual Flows
+
+### Request Flow Through Gateway And Auth
+
+![Request flow through gateway and auth](diagrams/request-flow-throught_gateway_and-auth.png)
+
+### Transaction To Fraud Decision
+
+![Transaction created to fraud decision](diagrams/from-transactioncreated-to-frauddecision.png)
+
+### Transaction Lifecycle
+
+![Transaction lifecycle](diagrams/transaction-lifecycle.png)
+
+### Fraud Decision Logic
+
+![Fraud decision tree](diagrams/fraud-decision-tree.png)
+
+### Manual Review Escalation
+
+![Manual review escalation](diagrams/manual-review-escalation.png)
+
+### Audit Trail
+
+![Transaction audit trail](diagrams/transaction-audit-trail.png)
+
+### Observability Flow
+
+![Observability flow](diagrams/observability-flow.png)
 
 ## Documentation
 
-- [Architecture Overview](/D:/fraudwatch/docs/architecture/overview.md)
-- [System Diagram](/D:/fraudwatch/docs/architecture/system-diagram.md)
-- [Transaction Review Sequence](/D:/fraudwatch/docs/diagrams/transaction-review-sequence.md)
-- [Service Data Models](/D:/fraudwatch/docs/erd/service-data-models.md)
-- [Service APIs](/D:/fraudwatch/docs/api/service-apis.md)
-- [Trade-Offs And Scaling Path](/D:/fraudwatch/docs/architecture/trade-offs-and-scaling.md)
-- [Local Runbook](/D:/fraudwatch/docs/runbooks/local-run.md)
+All links below are repository-relative and valid on GitHub:
+
+- [Architecture Overview](docs/architecture/overview.md)
+- [System Diagram](docs/architecture/system-diagram.md)
+- [Transaction Review Sequence](docs/diagrams/transaction-review-sequence.md)
+- [Service Data Models](docs/erd/service-data-models.md)
+- [Service APIs](docs/api/service-apis.md)
+- [Event Flow](docs/events/event-flow.md)
+- [Trade-Offs And Scaling Path](docs/architecture/trade-offs-and-scaling.md)
+- [Local Runbook](docs/runbooks/local-run.md)
 
 ## Local Development
 
@@ -92,55 +146,52 @@ More detail is available in [docs/events/event-flow.md](/D:/fraudwatch/docs/even
 
 - Java 17
 - Docker Desktop with Compose
-- Optional: Maven installed globally, though the repo includes `mvnw`
+- PowerShell
+- Optional: Maven installed globally, though the repository includes `mvnw`
 
-### Validate the Monorepo
+### Validate The Monorepo
 
 ```powershell
 .\mvnw.cmd -q validate
 ```
 
-### Start the Full Stack
+### Start The Full Stack
 
 ```powershell
 docker compose up --build
 ```
 
-### Run A Quick Smoke Check
-
-After the stack is healthy, execute:
+### Run A Smoke Check
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\dev\smoke-check.ps1
 ```
 
-The smoke check waits for application health endpoints, validates each service `internal/info` response, and confirms that Prometheus, Grafana, and RabbitMQ are reachable.
+The smoke check waits for service health endpoints, validates internal info endpoints, and confirms that Prometheus, Grafana, and RabbitMQ are reachable.
 
-### Recreate The Stack From A Clean State
-
-To fully reset the local environment, rebuild the stack, and run the smoke check:
+### Rebuild From A Clean Local State
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\dev\clean-start.ps1
 ```
 
-This removes Compose volumes and should be treated as a local development reset.
+This removes Compose volumes, so it should be treated as a local reset.
 
-### Stop the Stack
+### Stop The Stack
 
 ```powershell
 docker compose down
 ```
 
-### Run The End-To-End Demo Flow
+## Demo Scenarios
 
-After the stack is healthy, execute:
+After the stack becomes healthy, run:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\demo\full-flow.ps1
 ```
 
-By default the script runs the `review-block` scenario. You can also execute:
+By default, the script runs the `review-block` scenario. The supported variants are:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\demo\full-flow.ps1 -Scenario approved
@@ -149,20 +200,23 @@ powershell -ExecutionPolicy Bypass -File .\scripts\demo\full-flow.ps1 -Scenario 
 powershell -ExecutionPolicy Bypass -File .\scripts\demo\full-flow.ps1 -Scenario direct-block
 ```
 
-These scenarios cover approved flow, analyst approval, analyst block, and direct fraud block, then fetch the resulting transaction, audit records, and notifications.
+The script:
 
-The script first waits for `api-gateway` health, so it can be started immediately after the stack begins stabilizing.
+- waits for `api-gateway` health
+- registers a fresh demo user
+- creates a funded account
+- runs the selected fraud scenario
+- waits for the final transaction state
+- fetches related audit records and notifications
 
-For analyst/admin access in local environments, `auth-service` seeds these users automatically:
+Local demo credentials seeded by `auth-service`:
 
 - `analyst.demo` / `AnalystPass123!`
 - `admin.demo` / `AdminPass123!`
 
-### Useful Endpoints
+## Useful Endpoints
 
 - Gateway Swagger: `http://localhost:8080/swagger-ui.html`
-- Gateway Audit API: `http://localhost:8080/api/audit/records`
-- Gateway Notification API: `http://localhost:8080/api/notifications`
 - Auth Swagger: `http://localhost:8081/swagger-ui.html`
 - Transaction Swagger: `http://localhost:8082/swagger-ui.html`
 - Fraud Swagger: `http://localhost:8083/swagger-ui.html`
@@ -173,18 +227,19 @@ For analyst/admin access in local environments, `auth-service` seeds these users
 - Prometheus: `http://localhost:9090`
 - Grafana: `http://localhost:3000`
 
-## Current Notes
+## Observability And Operations
 
-- The repository is configured for Java 17, so the local shell should use JDK 17 or newer.
-- Dockerfiles build each service from the root monorepo using Maven.
-- Runtime images include `wget` so Docker healthchecks can probe `/actuator/health` inside each container.
-- Docker Compose now waits for application health endpoints before promoting downstream services such as `api-gateway` and `prometheus`.
+- All services expose health and metrics endpoints through Spring Boot Actuator.
 - Prometheus scraping is wired through `/actuator/prometheus`.
-- Grafana provisioning is included with a preloaded `FraudWatch Overview` dashboard under `infrastructure/grafana/dashboards`.
+- Docker Compose waits for infrastructure and application health before promoting downstream dependencies.
+- Grafana provisioning includes a preloaded `FraudWatch Overview` dashboard in `infrastructure/grafana/dashboards`.
+- Runtime Docker images include `wget` so container health checks can probe `/actuator/health`.
 
 ## Project Status
 
-- Core transaction, fraud, review, audit, and notification flows are implemented
-- Gateway-enforced RBAC is active for customer, analyst, and admin-facing API areas
-- CI validates Maven modules, Docker Compose configuration, the demo script syntax, and provisioned observability assets
-- The repository includes a runnable local stack, a scripted gateway demo flow, and a preloaded Grafana overview dashboard
+The project is in a completed MVP state:
+
+- core fraud, review, audit, and notification flows are implemented
+- gateway-enforced RBAC is active for customer, analyst, and admin-facing APIs
+- local end-to-end demo scenarios are scripted
+- CI validates code, configuration, demo assets, and service-level tests
